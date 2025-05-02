@@ -9,7 +9,7 @@ const trigonometric = @import("../../common/functions/trigonometric.zig");
 
 const TypeHelper = struct {
     fn BooleanVecTypeFromVecType(comptime Type: type) type {
-        return Vec(@typeInfo(Type).Struct.fields.len, bool);
+        return Vec(@typeInfo(Type).@"struct".fields.len, bool);
     }
 
     fn SwizzleTypeFromComponentsLength(comptime Dimens: usize, comptime Real: type) type {
@@ -34,7 +34,7 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
             /// Initialises every field of vector with same value.
             pub fn as(val: Real) Self {
                 var res: Self = undefined;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(res, fld.name) = val;
                 return res;
             }
@@ -45,7 +45,7 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
             /// fields are padded with default value - 0 for numeric types and false for boolean types.
             pub fn fromVec(comptime from_len: comptime_int, vec: Vec(from_len, Real)) Self {
                 var res: Self = undefined;
-                inline for (@typeInfo(Self).Struct.fields, 0..) |fld, idx|
+                inline for (@typeInfo(Self).@"struct".fields, 0..) |fld, idx|
                     @field(res, fld.name) = if (idx < from_len) @field(vec, fld.name) else (comptime zeroForArithmeticType(Real));
 
                 return res;
@@ -57,7 +57,7 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
             /// fields are padded with default value - 0 for numeric types and false for boolean types.
             pub fn fromVector(comptime from_len: comptime_int, vec: @Vector(from_len, Real)) Self {
                 var res: Self = undefined;
-                inline for (@typeInfo(Self).Struct.fields, 0..) |fld, idx|
+                inline for (@typeInfo(Self).@"struct".fields, 0..) |fld, idx|
                     @field(res, fld.name) = if (idx < from_len) vec[idx] else (comptime zeroForArithmeticType(Real));
 
                 return res;
@@ -69,8 +69,8 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
             /// fields are padded with default value - 0 for numeric types and false for boolean types.
             pub fn toVec(vec: Self, comptime to_len: comptime_int) Vec(to_len, Real) {
                 var res: Vec(to_len, Real) = undefined;
-                inline for (@typeInfo(Vec(to_len, Real)).Struct.fields, 0..) |fld, idx|
-                    @field(res, fld.name) = if (idx < @typeInfo(Self).Struct.fields.len) @field(vec, fld.name) else (comptime zeroForArithmeticType(Real));
+                inline for (@typeInfo(Vec(to_len, Real)).@"struct".fields, 0..) |fld, idx|
+                    @field(res, fld.name) = if (idx < @typeInfo(Self).@"struct".fields.len) @field(vec, fld.name) else (comptime zeroForArithmeticType(Real));
 
                 return res;
             }
@@ -82,7 +82,7 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
             pub fn toVector(vec: Self, comptime to_len: comptime_int) @Vector(to_len, Real) {
                 var res: @Vector(to_len, Real) = undefined;
                 inline for (0..to_len) |idx|
-                    res[idx] = if (idx < @typeInfo(Self).Struct.fields.len) @field(vec, @typeInfo(Self).Struct.fields[idx].name) else (comptime zeroForArithmeticType(Real));
+                    res[idx] = if (idx < @typeInfo(Self).@"struct".fields.len) @field(vec, @typeInfo(Self).@"struct".fields[idx].name) else (comptime zeroForArithmeticType(Real));
 
                 return res;
             }
@@ -111,7 +111,7 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
                 if (idx < 0 or idx >= Self.dimens)
                     @compileError("Vec.getAt: 'idx' value out of range - 'idx' value should be in range 0...dimens - 1");
 
-                return @field(vec, @typeInfo(Self).Struct.fields[idx].name);
+                return @field(vec, @typeInfo(Self).@"struct".fields[idx].name);
             }
 
             pub fn at(vec: Self, comptime idx: comptime_int) Real {
@@ -131,13 +131,13 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
                 if (idx < 0 or idx >= Self.dimens)
                     @compileError("Vec.setAt: 'idx' value out of range - 'idx' value should be in range 0...dimens - 1");
 
-                @field(vec, @typeInfo(Self).Struct.fields[idx].name) = val;
+                @field(vec, @typeInfo(Self).@"struct".fields[idx].name) = val;
             }
 
             /// Performs component-wise comparison in the form of a[i] == b[i] and return a boolean vector.
             pub fn equal(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(res, fld.name) = @field(a, fld.name) == @field(b, fld.name);
                 return res;
             }
@@ -145,14 +145,14 @@ fn ArithmeticVecMixin(comptime Self: type, comptime Real: type) type {
             /// Performs component-wise comparison in the form of a[i] != b[i] and return a boolean vector.
             pub fn notEqual(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(res, fld.name) = @field(a, fld.name) != @field(b, fld.name);
                 return res;
             }
 
             /// Performs component-wise comparison in the form of a[i] == b[i] and return a boolean.
             pub fn eql(a: Self, b: Self) bool {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     if (@field(a, fld.name) != @field(b, fld.name))
                         return false;
                 return true;
@@ -218,13 +218,13 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise addition on vector itself.
             pub fn addSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) += @field(b, fld.name);
             }
 
             /// Performs component-wise addition with single scalar value on vector itself.
             pub fn addScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) += scalar;
             }
 
@@ -244,13 +244,13 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise subtraction on vector itself.
             pub fn subSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) -= @field(b, fld.name);
             }
 
             /// Performs component-wise subtraction with single scalar value on vector itself.
             pub fn subScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) -= scalar;
             }
 
@@ -270,13 +270,13 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise multiplication on vector itself.
             pub fn mulSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) *= @field(b, fld.name);
             }
 
             /// Performs component-wise scaling by the factor provided with parameter 'scalar' on vector itself.
             pub fn mulScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) *= scalar;
             }
 
@@ -296,7 +296,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise multiplication on vector itself.
             pub fn powSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = exponential.pow(@field(a, fld.name), @field(b, fld.name));
             }
 
@@ -304,7 +304,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             ///
             /// This is variation of the pow function where the second parameter is always a scalar.
             pub fn powScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = exponential.pow(@field(a, fld.name), scalar);
             }
 
@@ -329,7 +329,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// If x and y are the same the square root of the dot product is equivalent to the length of the vector.
             pub fn dot(a: Self, b: Self) Real {
                 var res: Real = 0;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     res += geometric.dot(@field(a, fld.name), @field(b, fld.name));
                 return res;
             }
@@ -338,7 +338,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             ///
             /// Result value is set to 1 when source value is positive, to 0 when source value is zero and -1 when source value is negative.
             pub fn signSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.sign(@field(vec, fld.name));
             }
 
@@ -356,7 +356,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// For unsigned integers this is the same as numerator % denominator.
             /// Caller guarantees denominator > 0, otherwise the operation will result in a Remainder Division by Zero when runtime safety checks are enabled.
             pub fn modSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.mod(@field(a, fld.name), @field(b, fld.name));
             }
 
@@ -365,7 +365,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// For unsigned integers this is the same as numerator % denominator.
             /// Caller guarantees denominator > 0, otherwise the operation will result in a Remainder Division by Zero when runtime safety checks are enabled.
             pub fn modScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.mod(@field(a, fld.name), scalar);
             }
 
@@ -391,7 +391,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise operation of getting the smaller of the two arguments on vector itself.
             pub fn minSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.min(@field(a, fld.name), @field(b, fld.name));
             }
 
@@ -399,7 +399,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             ///
             /// This is variation of the min function where the second parameter is always a scalar.
             pub fn minScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.min(@field(a, fld.name), scalar);
             }
 
@@ -421,7 +421,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise operation of getting the greater of the two arguments on vector itself.
             pub fn maxSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.max(@field(a, fld.name), @field(b, fld.name));
             }
 
@@ -429,7 +429,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             ///
             /// This is variation of the max function where the second parameter is always a scalar.
             pub fn maxScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.max(@field(a, fld.name), scalar);
             }
 
@@ -454,7 +454,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// The clamp function returns vec[i] if it is larger than low[i] and smaller than high[i].
             /// In case vec[i] is smaller than low[i], low[i] is returned. If x is larger than high[i], high[i] is returned.
             pub fn clampSelf(vec: *Self, low: Self, high: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.clamp(@field(vec, fld.name), @field(low, fld.name), @field(high, fld.name));
             }
 
@@ -465,7 +465,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// The clamp function returns vec[i] if it is larger than low and smaller than high.
             /// In case vec[i] is smaller than low, low is returned. If x is larger than high, high is returned.
             pub fn clampScalarSelf(vec: *Self, low: Real, high: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.clamp(@field(vec, fld.name), low, high);
             }
 
@@ -493,7 +493,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise check if vec[i] < edge[i] and modifies object itself by setting fields to 0 or 1.
             pub fn stepSelf(vec: *Self, edge: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.step(@field(edge, fld.name), @field(vec, fld.name));
             }
 
@@ -501,7 +501,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             ///
             /// This is variation of the step function where the second parameter is always a scalars.
             pub fn stepScalarSelf(vec: *Self, edge: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.step(edge, @field(vec, fld.name));
             }
 
@@ -524,7 +524,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// The lessThan function returns a boolean vector as result of a component-wise comparison in the form of x[i] < y[i].
             pub fn lessThan(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(res, fld.name) = @field(a, fld.name) < @field(b, fld.name);
                 return res;
             }
@@ -532,7 +532,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// The lessThanEqual function returns a boolean vector as result of a component-wise comparison in the form of x[i] <= y[i].
             pub fn lessThanEqual(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(res, fld.name) = @field(a, fld.name) <= @field(b, fld.name);
                 return res;
             }
@@ -540,7 +540,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// The greaterThan function returns a boolean vector as result of a component-wise comparison in the form of x[i] > y[i].
             pub fn greaterThan(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(res, fld.name) = @field(a, fld.name) > @field(b, fld.name);
                 return res;
             }
@@ -548,7 +548,7 @@ fn NumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// The greaterThanEqual function returns a boolean vector as result of a component-wise comparison in the form of x[i] >= y[i].
             pub fn greaterThanEqual(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(res, fld.name) = @field(a, fld.name) >= @field(b, fld.name);
                 return res;
             }
@@ -620,7 +620,7 @@ fn SignedNumericVecMixin(comptime Self: type, comptime Real: type) type {
         struct {
             /// Performs component-wise absolute value calculation on vector itself.
             pub fn absSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.abs(@field(vec, fld.name));
             }
 
@@ -633,7 +633,7 @@ fn SignedNumericVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise negation on vector itself.
             pub fn negSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = -@field(vec, fld.name);
             }
 
@@ -653,7 +653,7 @@ fn SignedNumericVecMixin(comptime Self: type, comptime Real: type) type {
             /// From this it follows that the reflection vector is normalized if N and I are both normalized.
             pub fn reflectSelf(inc: *Self, norm: Self) void {
                 const d2 = Self.dot(norm, inc.*) * 2;
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(inc, fld.name) -= (@field(norm, fld.name) * d2);
             }
 
@@ -721,13 +721,13 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
         struct {
             /// Performs component-wise division on vector itself.
             pub fn divSelf(a: *Self, b: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) /= @field(b, fld.name);
             }
 
             /// Performs component-wise division on vector itself.
             pub fn divScalarSelf(a: *Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) /= scalar;
             }
 
@@ -785,7 +785,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
                 }
 
                 const sqrtk = @sqrt(k);
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(inc, fld.name) = (@field(inc, fld.name) * eta) - (@field(norm, fld.name) * ((eta * d) + sqrtk));
             }
 
@@ -802,7 +802,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise builtin @floor operation on vector itself.
             pub fn floorSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.floor(@field(vec, fld.name));
             }
 
@@ -815,7 +815,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise builtin @ceil operation on vector itself.
             pub fn ceilSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.ceil(@field(vec, fld.name));
             }
 
@@ -828,7 +828,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise fractional part of vec[i] calculation, i.e. vec[i] - @floor(vec[i]) on vector itself.
             pub fn fractSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.fract(@field(vec, fld.name));
             }
 
@@ -841,7 +841,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise linear blend calculation of a[i] and b[i], i.e. (a[i] * (1 - m[i])) + (b[i] * m[i]) on vector itself.
             pub fn mixSelf(a: *Self, b: Self, m: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.mix(@field(a, fld.name), @field(b, fld.name), @field(m, fld.name));
             }
 
@@ -849,7 +849,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
             ///
             /// This is variation of the mix function where the third parameter is always a scalar.
             pub fn mixScalarSelf(a: *Self, b: Self, scalar: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(a, fld.name) = common.mix(@field(a, fld.name), @field(b, fld.name), scalar);
             }
 
@@ -874,7 +874,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
             /// The smoothstep function returns 0 if vec[i] is smaller then edge0[i] and 1 if vec[i] is larger than edge1[i].
             /// Otherwise the return value is interpolated between 0 and 1 using Hermite polynomials.
             pub fn smoothstepSelf(vec: *Self, edge0: Self, edge1: Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.smoothstep(@field(edge0, fld.name), @field(edge1, fld.name), @field(vec, fld.name));
             }
 
@@ -885,7 +885,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
             /// The smoothstep function returns 0 if vec[i] is smaller then edge0[i] and 1 if vec[i] is larger than edge1[i].
             /// Otherwise the return value is interpolated between 0 and 1 using Hermite polynomials.
             pub fn smoothstepScalarSelf(vec: *Self, edge0: Real, edge1: Real) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = common.smoothstep(edge0, edge1, @field(vec, fld.name));
             }
 
@@ -913,7 +913,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise std.math.approxEqAbs operation and returns bool.
             pub fn approxEqAbs(a: Self, b: Self, tolerance: Real) bool {
-                return inline for (@typeInfo(Self).Struct.fields) |fld| {
+                return inline for (@typeInfo(Self).@"struct".fields) |fld| {
                     if (!math.approxEqAbs(Real, @field(a, fld.name), @field(b, fld.name), tolerance))
                         break false;
                 } else true;
@@ -921,7 +921,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise std.math.approxEqRel operation and returns bool.
             pub fn approxEqRel(a: Self, b: Self, tolerance: Real) bool {
-                return inline for (@typeInfo(Self).Struct.fields) |fld| {
+                return inline for (@typeInfo(Self).@"struct".fields) |fld| {
                     if (!math.approxEqRel(Real, @field(a, fld.name), @field(b, fld.name), tolerance))
                         break false;
                 } else true;
@@ -929,7 +929,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise conversion from degrees to radians on vector itself.
             pub fn radiansSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.radians(@field(vec, fld.name));
             }
 
@@ -942,7 +942,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise conversion from radians to degrees on vector itself.
             pub fn degreesSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.degrees(@field(vec, fld.name));
             }
 
@@ -955,7 +955,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of bulitin @sin function on vector itself.
             pub fn sinSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.sin(@field(vec, fld.name));
             }
 
@@ -968,7 +968,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of bulitin @cos function on vector itself.
             pub fn cosSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.cos(@field(vec, fld.name));
             }
 
@@ -981,7 +981,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of bulitin @tan function on vector itself.
             pub fn tanSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.tan(@field(vec, fld.name));
             }
 
@@ -994,7 +994,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of bulitin @asin function on vector itself.
             pub fn asinSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.asin(@field(vec, fld.name));
             }
 
@@ -1007,7 +1007,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of bulitin @acos function on vector itself.
             pub fn acosSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.acos(@field(vec, fld.name));
             }
 
@@ -1020,7 +1020,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of bulitin @atan function on vector itself.
             pub fn atanSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = trigonometric.atan(@field(vec, fld.name));
             }
 
@@ -1033,7 +1033,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of builtin @exp function on vector itself.
             pub fn expSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = exponential.exp(@field(vec, fld.name));
             }
 
@@ -1046,7 +1046,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of builtin @log function on vector itself.
             pub fn logSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = exponential.log(@field(vec, fld.name));
             }
 
@@ -1059,7 +1059,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of builtin @exp2 function on vector itself.
             pub fn exp2Self(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = exponential.exp2(@field(vec, fld.name));
             }
 
@@ -1072,7 +1072,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of builtin @log2 function on vector itself.
             pub fn log2Self(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = exponential.log2(@field(vec, fld.name));
             }
 
@@ -1085,7 +1085,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
 
             /// Performs component-wise application of builtin @sqrt function on vector itself.
             pub fn sqrtSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = exponential.sqrt(@field(vec, fld.name));
             }
 
@@ -1100,7 +1100,7 @@ fn FloatingPointVecMixin(comptime Self: type, comptime Real: type) type {
             ///
             /// In case of vector of f32 types, performs qrsqrt (Quake 3 Fast Inverse Sqrt Algorithm).
             pub fn inversesqrtSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = exponential.inversesqrt(@field(vec, fld.name));
             }
 
@@ -1122,21 +1122,21 @@ fn BooleanVecMixin(comptime Self: type, comptime Real: type) type {
         struct {
             /// Checks whether any component of vector is 'true' and returns boolean.
             pub fn any(vec: Self) bool {
-                return inline for (@typeInfo(Self).Struct.fields) |fld| {
+                return inline for (@typeInfo(Self).@"struct".fields) |fld| {
                     if (@field(vec, fld.name)) break true;
                 } else false;
             }
 
             /// Checks whether all components of vector are 'true' and returns boolean.
             pub fn all(vec: Self) bool {
-                return inline for (@typeInfo(Self).Struct.fields) |fld| {
+                return inline for (@typeInfo(Self).@"struct".fields) |fld| {
                     if (!@field(vec, fld.name)) break false;
                 } else true;
             }
 
             /// Performs component-wise logical complement operation on vector itself.
             pub fn negateSelf(vec: *Self) void {
-                inline for (@typeInfo(Self).Struct.fields) |fld|
+                inline for (@typeInfo(Self).@"struct".fields) |fld|
                     @field(vec, fld.name) = !@field(vec, fld.name);
             }
 

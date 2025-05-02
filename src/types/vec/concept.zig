@@ -7,10 +7,10 @@ const FIELD_NAMES = "xyzw";
 
 pub fn isVec(comptime Type: type) bool {
     const T = @typeInfo(Type);
-    if (T != .Struct)
+    if (T != .@"struct")
         return false;
 
-    const fields = T.Struct.fields;
+    const fields = T.@"struct".fields;
     if (fields.len == 0 or fields.len > 4)
         return false;
 

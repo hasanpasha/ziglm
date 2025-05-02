@@ -1,5 +1,5 @@
 pub fn isSignedIntegral(comptime Type: type) bool {
-    return @typeInfo(Type) == .Int and @typeInfo(Type).Int.signedness == .signed;
+    return @typeInfo(Type) == .int and @typeInfo(Type).int.signedness == .signed;
 }
 
 pub fn requireSignedIntegral(comptime Type: type) void {
@@ -8,7 +8,7 @@ pub fn requireSignedIntegral(comptime Type: type) void {
 }
 
 pub fn isUnsignedIntegral(comptime Type: type) bool {
-    return @typeInfo(Type) == .Int and @typeInfo(Type).Int.signedness == .unsigned;
+    return @typeInfo(Type) == .int and @typeInfo(Type).int.signedness == .unsigned;
 }
 
 pub fn requireUnsignedIntegral(comptime Type: type) void {
@@ -17,7 +17,7 @@ pub fn requireUnsignedIntegral(comptime Type: type) void {
 }
 
 pub fn isFloatingPoint(comptime Type: type) bool {
-    return @typeInfo(Type) == .Float;
+    return @typeInfo(Type) == .float;
 }
 
 pub fn requireFloatingPoint(comptime Type: type) void {
@@ -26,7 +26,7 @@ pub fn requireFloatingPoint(comptime Type: type) void {
 }
 
 pub fn isFloatingPoint32(comptime Type: type) bool {
-    return @typeInfo(Type) == .Float and @typeInfo(Type).Float.bits == 32;
+    return @typeInfo(Type) == .float and @typeInfo(Type).float.bits == 32;
 }
 
 pub fn requireFloatingPoint32(comptime Type: type) void {
@@ -53,7 +53,7 @@ pub fn requireNumeric(comptime Type: type) void {
 }
 
 pub fn isBoolean(comptime Type: type) bool {
-    return @typeInfo(Type) == .Bool;
+    return @typeInfo(Type) == .bool;
 }
 
 pub fn requireBoolean(comptime Type: type) void {

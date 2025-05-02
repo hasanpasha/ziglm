@@ -28,7 +28,7 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
             pub fn as(val: Real) Self {
                 var res: Self = undefined;
                 inline for (0..Self.col_count) |idx| {
-                    inline for (@typeInfo(Self.col_type).Struct.fields) |fld|
+                    inline for (@typeInfo(Self.col_type).@"struct".fields) |fld|
                         @field(res.cols[idx], fld.name) = val;
                 }
                 return res;
@@ -37,7 +37,7 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
             pub fn scalar(val: Real) Self {
                 var res: Self = undefined;
                 inline for (0..Self.col_count) |cidx| {
-                    inline for (@typeInfo(Self.col_type).Struct.fields, 0..) |fld, ridx|
+                    inline for (@typeInfo(Self.col_type).@"struct".fields, 0..) |fld, ridx|
                         @field(res.cols[cidx], fld.name) = if (cidx == ridx) val else (comptime zeroForArithmeticType(Real));
                 }
                 return res;
@@ -46,7 +46,7 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
             pub fn fromMat(comptime from_cols: comptime_int, comptime from_rows: comptime_int, mat: Mat(from_cols, from_rows, Real)) Self {
                 var res: Self = undefined;
                 inline for (0..Self.col_count) |cidx| {
-                    inline for (@typeInfo(Self.col_type).Struct.fields, 0..) |fld, ridx|
+                    inline for (@typeInfo(Self.col_type).@"struct".fields, 0..) |fld, ridx|
                         @field(res.cols[cidx], fld.name) = if (cidx < from_cols and ridx < from_rows) @field(mat.cols[cidx], fld.name) else (comptime zeroForArithmeticType(Real));
                 }
                 return res;
@@ -55,7 +55,7 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
             pub fn toMat(mat: Self, comptime to_cols: comptime_int, comptime to_rows: comptime_int) Mat(to_cols, to_rows, Real) {
                 var res: Mat(to_cols, to_rows, Real) = undefined;
                 inline for (0..to_cols) |cidx| {
-                    inline for (@typeInfo(Mat(to_cols, to_rows, Real).col_type).Struct.fields, 0..) |fld, ridx|
+                    inline for (@typeInfo(Mat(to_cols, to_rows, Real).col_type).@"struct".fields, 0..) |fld, ridx|
                         @field(res.cols[cidx], fld.name) = if (cidx < Self.col_count and ridx < Self.row_count) @field(mat.cols[cidx], fld.name) else (comptime zeroForArithmeticType(Real));
                 }
                 return res;
@@ -78,7 +78,7 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
 
             pub fn row(mat: Self, comptime idx: comptime_int) Self.row_type {
                 var res: Self.row_type = undefined;
-                inline for (@typeInfo(Self.row_type).Struct.fields, 0..) |fld, cidx|
+                inline for (@typeInfo(Self.row_type).@"struct".fields, 0..) |fld, cidx|
                     @field(res, fld.name) = mat.cols[cidx].getAt(idx);
                 return res;
             }
@@ -90,13 +90,13 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
                 if (ridx < 0 or ridx >= Self.row_count)
                     @compileError("Vec.setAt: 'idx' value out of range - 'ridx' value should be in range 0...row_count - 1");
 
-                @field(mat.cols[cidx], @typeInfo(Self.col_type).Struct.fields[ridx].name) = val;
+                @field(mat.cols[cidx], @typeInfo(Self.col_type).@"struct".fields[ridx].name) = val;
             }
 
             pub fn equal(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
                 inline for (0..Self.col_count) |cidx| {
-                    inline for (@typeInfo(Self.col_type).Struct.fields) |fld|
+                    inline for (@typeInfo(Self.col_type).@"struct".fields) |fld|
                         @field(res.cols[cidx], fld.name) = @field(a.cols[cidx], fld.name) == @field(b.cols[cidx], fld.name);
                 }
                 return res;
@@ -105,7 +105,7 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
             pub fn notEqual(a: Self, b: Self) TypeHelper.BooleanVecTypeFromVecType(Self) {
                 var res: TypeHelper.BooleanVecTypeFromVecType(Self) = undefined;
                 inline for (0..Self.col_count) |cidx| {
-                    inline for (@typeInfo(Self.col_type).Struct.fields) |fld|
+                    inline for (@typeInfo(Self.col_type).@"struct".fields) |fld|
                         @field(res.cols[cidx], fld.name) = @field(a.cols[cidx], fld.name) != @field(b.cols[cidx], fld.name);
                 }
                 return res;
@@ -113,7 +113,7 @@ fn ArithmeticMatMixin(comptime Self: type, comptime Real: type) type {
 
             pub fn eql(a: Self, b: Self) bool {
                 inline for (0..Self.col_count) |cidx| {
-                    inline for (@typeInfo(Self.col_type).Struct.fields) |fld|
+                    inline for (@typeInfo(Self.col_type).@"struct".fields) |fld|
                         if (@field(a.cols[cidx], fld.name) != @field(b.cols[cidx], fld.name))
                             return false;
                 }

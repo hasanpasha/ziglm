@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/ziglm.zig"),
         .target = target,
         .optimize = optimize,
-        .version = std.SemanticVersion{ .major = 1, .minor = 0, .patch = 0 },
+        .version = std.SemanticVersion{ .major = 1, .minor = 1, .patch = 0 },
         .single_threaded = true,
     });
 
